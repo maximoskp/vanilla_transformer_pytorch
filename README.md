@@ -11,10 +11,10 @@ https://github.com/maximoskp/TransformersFromScratch
 
 DONE:
 - Vanilla implementation
+- Implement model-encoder-decoder transformer.
 
 TODO:
 - Test vanilla with real data.
-- Implement model-encoder-decoder transformer.
 - Locking decoder.
 - Constraint-mask decoder.
 - Split-dictionary encoder-decoder. 
