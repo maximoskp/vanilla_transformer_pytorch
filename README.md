@@ -12,6 +12,7 @@ https://github.com/maximoskp/TransformersFromScratch
 DONE:
 - Vanilla implementation
 - Implement model-encoder-decoder transformer.
+- MLM model and training with https://github.com/lucidrains/mlm-pytorch/tree/master 
 
 TODO:
 - Test vanilla with real data.
