@@ -130,16 +130,17 @@ class MLMEncoderWrapper(nn.Module):
         super(MLMEncoderWrapper, self).__init__()
         self.encoder_model = encoderModel
         # decoder is shared with embedding layer
-        embed_weight = self.encoder_model.encoder_embedding.weight
-        n_vocab, n_dim = embed_weight.size()
+        n_vocab, n_dim = self.encoder_model.encoder_embedding.weight.size()
         self.decoder = nn.Linear(n_dim, n_vocab, bias=False)
-        self.decoder.weight = embed_weight
-        self.decoder_bias = nn.Parameter(torch.zeros(n_vocab))
+        # tie weights
+        self.decoder.weight = self.encoder_model.encoder_embedding.weight
+        # self.decoder_bias = nn.Parameter(torch.zeros(n_vocab))
     # end init
 
     def forward(self, input_ids):
         output = self.encoder_model(input_ids)
-        logits_vocab_size = self.decoder(output) + self.decoder_bias # [batch_size, max_pred, n_vocab]
+        # adding bias again is not correct
+        logits_vocab_size = self.decoder(output) # + self.decoder_bias # [batch_size, max_pred, n_vocab]
         return logits_vocab_size
     # end forward
 # end class MLMEncoderWrapper

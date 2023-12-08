@@ -30,16 +30,26 @@ TOKENIZER_PARAMS = {
 config = TokenizerConfig(**TOKENIZER_PARAMS)
 tokenizer = REMI(config)
 
-# path_to_dataset = 'data/maestro-v3.0.0/'
-# path_to_tokens = 'data/maestro-v3.0.0_noBPE/'
-# path_to_tokens_bpe = 'data/maestro-v3.0.0_BPE/'
-# path_to_tokenizer_config = 'data/maestro-v3.0.0_tokenizer.json'
-path_to_dataset = 'data/maestro_small/'
-path_to_tokens = 'data/maestro_small_noBPE/'
-path_to_tokens_bpe = 'data/maestro_small_BPE/'
-path_to_tokenizer_config = 'data/maestro_small_tokenizer.json'
+### full dataset
+## small prefix
+# prefix = "/data/scratch/efthygeo/maestro/maestro-v3.0.0"
+prefix = "/data/scratch/efthygeo/maestro/maestro-v3.0.0"
+
+
+path_to_dataset = prefix
+path_to_tokens = f'{prefix}_noBPE/'
+path_to_tokens_bpe = f'{prefix}_BPE/'
+path_to_tokenizer_config = f'{prefix}_tokenizer.json'
+
+## smaller dataset
+# path_to_dataset = 'data/maestro_small/'
+# path_to_tokens = 'data/maestro_small_noBPE/'
+# path_to_tokens_bpe = 'data/maestro_small_BPE/'
+# path_to_tokenizer_config = 'data/maestro_small_tokenizer.json'
+
 # Tokenize a whole dataset and save it at Json files
 midi_paths = list(Path(path_to_dataset).glob("**/*.midi"))
+# import pdb; pdb.set_trace()
 
 data_augmentation_offsets = [1, 1, 1]  # data augmentation on 2 pitch octaves, 1 velocity and 1 duration values
 tokenizer.tokenize_midi_dataset(midi_paths, Path(path_to_tokens),
