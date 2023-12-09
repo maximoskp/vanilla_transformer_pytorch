@@ -1,7 +1,14 @@
 # vanilla_transformer_pytorch
 A vanilla encoder-decoder base in pytorch, for experimentation. The main branch is intended to remain in vanilla form and branches from that should include the experimental variations.
 
-Data: in data_preparation, a folder called "data" needs to be created. Within the "data" folder, the Maestro v3 MIDI dataset needs to be downloaded in the default download folder named "maestro-v3.0.0". Maestro v3 MIDI can be downloaded using this link: https://storage.googleapis.com/magentadata/datasets/maestro/v3.0.0/maestro-v3.0.0-midi.zip 
+Data: in data_preparation,
+- create a folder called ```data```.
+- Within the ```data``` folder, put the Maestro v3 MIDI dataset in the ```data/maestro-v3.0.0/``` subfolder.
+- Within the ```data``` folder, put the GiantMIDI dataset in the ```data/giantmidi/``` subfolder.
+
+Download the datasets.
+- Maestro v3 MIDI: https://storage.googleapis.com/magentadata/datasets/maestro/v3.0.0/maestro-v3.0.0-midi.zip 
+- GiantMIDI: https://github.com/bytedance/GiantMIDI-Piano 
 
 Mainly followed this code:
 
