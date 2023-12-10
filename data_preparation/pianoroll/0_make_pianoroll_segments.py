@@ -37,12 +37,12 @@ for midifile in tqdm(midifiles):
             # print(f'running for start: {start_idx} and end: {end_idx}')
             # create deepcopy of main piece
             new_piece = deepcopy(main_piece)
-            new_piece.tracks[0].pianoroll = tmp_pianoroll
+            new_piece.tracks[0].pianoroll = deepcopy(tmp_pianoroll)
             # trim and binarize
             new_piece.trim(start_idx,end_idx)
             new_piece.binarize()
             # make chroma
-            chroma = tmp_pianoroll[:,:12]
+            chroma = new_piece.tracks[0].pianoroll[:,:12]
             for i in range(12, 128-12, 12):
                 chroma = np.logical_or(chroma, tmp_pianoroll[:,i:(i+12)])
             chroma[:,-6:] = np.logical_or(chroma[:,-6:], tmp_pianoroll[:,-6:])
