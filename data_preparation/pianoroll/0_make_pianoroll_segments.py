@@ -18,14 +18,20 @@ midifolder = '../data/giantmidi/'
 midifiles = os.listdir(midifolder)
 
 # size in beats
-segment_size = 32
+segment_size = 64
 piece_idx = 0
+
+# initialize catalogue
+with open('piece_per_idx.txt', 'w') as f:
+    print('piece_idx, file_name', file=f)
 
 for midifile in tqdm(midifiles):
     main_piece = pypianoroll.read(midifolder + midifile)
     # keep size to know when to end
     main_piece_size = main_piece.downbeat.shape[0]
     transposition_idx = 0
+    with open('piece_per_idx.txt', 'a') as f:
+        print(f'{piece_idx:05}, {midifile}', file=f)
     # roll
     for r in tqdm(range(-6,6,1), leave=False):
         # print(f'running for roll: {r}')
@@ -44,8 +50,8 @@ for midifile in tqdm(midifiles):
             # make chroma
             chroma = new_piece.tracks[0].pianoroll[:,:12]
             for i in range(12, 128-12, 12):
-                chroma = np.logical_or(chroma, tmp_pianoroll[:,i:(i+12)])
-            chroma[:,-6:] = np.logical_or(chroma[:,-6:], tmp_pianoroll[:,-6:])
+                chroma = np.logical_or(chroma, new_piece.tracks[0].pianoroll[:,i:(i+12)])
+            chroma[:,-6:] = np.logical_or(chroma[:,-6:], new_piece.tracks[0].pianoroll[:,-6:])
             indexed_chroma = binaryTokenizer.transform( chroma )
             # make name of piece
             piece_name = f'p{piece_idx:05}_t{transposition_idx:02}_s{segment_idx:04}'
