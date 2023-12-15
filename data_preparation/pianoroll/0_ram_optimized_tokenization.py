@@ -13,6 +13,7 @@ from BinaryTokenizer import BinaryTokenizer
 from miditok import REMI, TokenizerConfig
 from miditoolkit import MidiFile
 # from pathlib import Path
+import pandas as pd
 
 # Our tokenizer's configuration
 PITCH_RANGE = (21, 109)
@@ -91,10 +92,13 @@ def make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, trans
 with open('piece_per_idx.txt', 'w') as f:
     print('piece_idx, file_name', file=f)
 
-chroma_idxs = []
+names = []
+chromas = []
 tokens = []
+is_starting_segment = []
+is_ending_segment = []
 
-for midifile in tqdm(midifiles[:1]):
+for midifile in tqdm(midifiles):
     main_piece = pypianoroll.read(midifolder + midifile)
     # keep size to know when to end
     main_piece_size = main_piece.downbeat.shape[0]
@@ -113,16 +117,33 @@ for midifile in tqdm(midifiles[:1]):
             piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
             start_idx = end_idx
             end_idx += segment_size*main_piece.resolution
+            names.append(piece_name)
+            chromas.append(np.array(indexed_chroma))
+            tokens.append(np.array(tmp_tokens))
+            is_starting_segment.append(segment_idx == 0)
+            is_ending_segment.append(False)
             segment_idx += 1
         # end end_idx while
         end_idx = main_piece_size
         start_idx = end_idx - segment_size*main_piece.resolution
         piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
+        names.append(piece_name)
+        chromas.append(np.array(indexed_chroma))
+        tokens.append(np.array(tmp_tokens))
+        is_starting_segment.append(segment_idx == 0)
+        is_ending_segment.append(True)
         transposition_idx += 1
     # end transposition range for
     piece_idx += 1
 # end midifile for
 
-print('indexed_chroma: ', indexed_chroma)
-print('tmp_tokens: ', tmp_tokens)
-print(tmp_tokens[0].ids)
+d = {
+    'names': names,
+    'chromas': chromas,
+    'tokens': tokens,
+    'start': is_starting_segment,
+    'end': is_ending_segment
+}
+
+df = pd.DataFrame.from_dict(d)
+df.to_csv('data/test_df.csv', sep='\t')
