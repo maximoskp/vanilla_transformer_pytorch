@@ -1,4 +1,4 @@
-import pypianoroll
+import pypianoroll # change in outputs.py
 from mido import MidiFile
 import os
 from copy import deepcopy
