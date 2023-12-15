@@ -25,7 +25,7 @@ piece_idx = 0
 with open('piece_per_idx.txt', 'w') as f:
     print('piece_idx, file_name', file=f)
 
-for midifile in tqdm(midifiles):
+for midifile in tqdm(midifiles[:1]):
     main_piece = pypianoroll.read(midifolder + midifile)
     # keep size to know when to end
     main_piece_size = main_piece.downbeat.shape[0]

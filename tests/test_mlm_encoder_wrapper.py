@@ -20,7 +20,6 @@ batch_size = 16
 
 encoderModel = EncoderModel(src_vocab_size, d_model, num_heads, num_layers, d_ff, max_seq_length, dropout)
 mlmEncoderWrapper = MLMEncoderWrapper(encoderModel)
-print(encoderModel.parameters())
 
 trainer = MLM(
     mlmEncoderWrapper,

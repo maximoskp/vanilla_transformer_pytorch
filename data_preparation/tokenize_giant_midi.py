@@ -17,14 +17,14 @@ TEMPO_RANGE = (50, 200)  # (min_tempo, max_tempo)
 TOKENIZER_PARAMS = {
     "pitch_range": PITCH_RANGE,
     "beat_res": BEAT_RES,
-    "nb_velocities": NB_VELOCITIES,
+    "num_velocities": NB_VELOCITIES,
     "special_tokens": SPECIAL_TOKENS,
     "use_chords": USE_CHORDS,
     "use_rests": USE_RESTS,
     "use_tempos": USE_TEMPOS,
     "use_time_signatures": USE_TIME_SIGNATURE,
     "use_programs": USE_PROGRAMS,
-    "nb_tempos": NB_TEMPOS,
+    "num_tempos": NB_TEMPOS,
     "tempo_range": TEMPO_RANGE,
 }
 config = TokenizerConfig(**TOKENIZER_PARAMS)
