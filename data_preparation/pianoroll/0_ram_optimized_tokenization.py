@@ -101,7 +101,7 @@ tokens = []
 is_starting_segment = []
 is_ending_segment = []
 
-for midifile in tqdm(midifiles[:5]):
+for midifile in tqdm(midifiles):
     main_piece = pypianoroll.read(midifolder + midifile)
     # keep size to know when to end
     main_piece_size = main_piece.downbeat.shape[0]
