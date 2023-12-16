@@ -118,8 +118,8 @@ for midifile in tqdm(midifiles):
             start_idx = end_idx
             end_idx += segment_size*main_piece.resolution
             names.append(piece_name)
-            chromas.append(np.array(indexed_chroma))
-            tokens.append(np.array(tmp_tokens))
+            chromas.append( list(np.array(indexed_chroma)) )
+            tokens.append( list(np.array(tmp_tokens)) )
             is_starting_segment.append(segment_idx == 0)
             is_ending_segment.append(False)
             segment_idx += 1
@@ -129,8 +129,8 @@ for midifile in tqdm(midifiles):
         if start_idx > 0:
             piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
             names.append(piece_name)
-            chromas.append(np.array(indexed_chroma))
-            tokens.append(np.array(tmp_tokens))
+            chromas.append( list(np.array(indexed_chroma)) )
+            tokens.append( list(np.array(tmp_tokens)) )
             is_starting_segment.append(segment_idx == 0)
             is_ending_segment.append(True)
         transposition_idx += 1
