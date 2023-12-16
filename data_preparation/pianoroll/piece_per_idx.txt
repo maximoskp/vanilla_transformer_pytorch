@@ -4,8 +4,3 @@ piece_idx, file_name
 00002, Abel, Frederic, Lola Polka, SLNJF0uiqRw.mid
 00003, Abramowitsch, A., 3 Nocturnes, LKK-7L2Ppw8.mid
 00004, Abreu, Zequinha, Tico-Tico no fubá, KyEuFpJuwfc.mid
-00005, Abt, Franz, 7 Lieder aus dem Buche der Liebe, Op.39, K33a_r6IKeA.mid
-00006, Achron, Joseph, 2 Pieces, Op.56, sNqKnJNxSOE.mid
-00007, Achron, Joseph, Symphonic Variations and Sonata, Op.39, RtRrQwO2Hng.mid
-00008, Ackerman, Gabriel J., Ballade No.1, Op.5, KoY5XWvk5C4.mid
-00009, Adalid, Marcial del, 24 Romances sans paroles, FazuwhlTGtM.mid

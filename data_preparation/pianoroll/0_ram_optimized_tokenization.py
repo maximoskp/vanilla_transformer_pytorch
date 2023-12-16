@@ -54,6 +54,9 @@ binaryTokenizer = BinaryTokenizer(num_digits=12)
 midifolder = '../data/giantmidi/'
 midifiles = os.listdir(midifolder)
 
+save_every = 500
+csv_file_idx = 0
+
 # size in beats
 segment_size = 64
 piece_idx = 0
@@ -98,7 +101,7 @@ tokens = []
 is_starting_segment = []
 is_ending_segment = []
 
-for midifile in tqdm(midifiles):
+for midifile in tqdm(midifiles[:5]):
     main_piece = pypianoroll.read(midifolder + midifile)
     # keep size to know when to end
     main_piece_size = main_piece.downbeat.shape[0]
@@ -136,6 +139,22 @@ for midifile in tqdm(midifiles):
         transposition_idx += 1
     # end transposition range for
     piece_idx += 1
+    if piece_idx%save_every == 0:
+        d = {
+            'names': names,
+            'chromas': chromas,
+            'tokens': tokens,
+            'start': is_starting_segment,
+            'end': is_ending_segment
+        }
+        names = []
+        chromas = []
+        tokens = []
+        is_starting_segment = []
+        is_ending_segment = []
+        df = pd.DataFrame.from_dict(d)
+        df.to_csv(f'data/test_df_{csv_file_idx}.csv', sep=',')
+        csv_file_idx += 1
 # end midifile for
 
 d = {
@@ -147,4 +166,4 @@ d = {
 }
 
 df = pd.DataFrame.from_dict(d)
-df.to_csv('data/test_df.csv', sep='\t')
+df.to_csv(f'data/test_df_{csv_file_idx}.csv', sep=',')
