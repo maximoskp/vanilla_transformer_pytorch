@@ -126,12 +126,13 @@ for midifile in tqdm(midifiles):
         # end end_idx while
         end_idx = main_piece_size
         start_idx = end_idx - segment_size*main_piece.resolution
-        piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
-        names.append(piece_name)
-        chromas.append(np.array(indexed_chroma))
-        tokens.append(np.array(tmp_tokens))
-        is_starting_segment.append(segment_idx == 0)
-        is_ending_segment.append(True)
+        if start_idx > 0:
+            piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
+            names.append(piece_name)
+            chromas.append(np.array(indexed_chroma))
+            tokens.append(np.array(tmp_tokens))
+            is_starting_segment.append(segment_idx == 0)
+            is_ending_segment.append(True)
         transposition_idx += 1
     # end transposition range for
     piece_idx += 1
