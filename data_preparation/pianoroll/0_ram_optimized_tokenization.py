@@ -43,12 +43,6 @@ TOKENIZER_PARAMS = {
 config = TokenizerConfig(**TOKENIZER_PARAMS)
 tokenizer = REMI(config)
 
-# make folder structure
-os.makedirs('data', exist_ok=True)
-os.makedirs('data/pianorolls', exist_ok=True)
-os.makedirs('data/midis', exist_ok=True)
-os.makedirs('data/midi_tokens', exist_ok=True)
-
 binaryTokenizer = BinaryTokenizer(num_digits=12)
 
 midifolder = '../data/giantmidi/'
@@ -92,7 +86,10 @@ def make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, trans
     return piece_name, tmp_tokens[0].ids, indexed_chroma
 
 # initialize catalogue
-with open('piece_per_idx.txt', 'w') as f:
+with open('data/piece_per_idx.txt', 'w') as f:
+    print('piece_idx, file_name', file=f)
+# initialize problematic files catalogue
+with open('data/problematic_pieces.txt', 'w') as f:
     print('piece_idx, file_name', file=f)
 
 names = []
@@ -101,60 +98,65 @@ tokens = []
 is_starting_segment = []
 is_ending_segment = []
 
-for midifile in tqdm(midifiles):
-    main_piece = pypianoroll.read(midifolder + midifile)
-    # keep size to know when to end
-    main_piece_size = main_piece.downbeat.shape[0]
-    transposition_idx = 0
-    with open('piece_per_idx.txt', 'a') as f:
-        print(f'{piece_idx:05}, {midifile}', file=f)
-    # roll
-    for r in tqdm(range(-6,6,1), leave=False):
-        # print(f'running for roll: {r}')
-        start_idx = 0
-        end_idx = segment_size*main_piece.resolution
-        tmp_pianoroll = np.roll(main_piece.tracks[0].pianoroll, [0,r])
-        segment_idx = 0
-        while end_idx < main_piece_size:
-            # print(f'running for start: {start_idx} and end: {end_idx}')
-            piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
-            start_idx = end_idx
-            end_idx += segment_size*main_piece.resolution
-            names.append(piece_name)
-            chromas.append( list(np.array(indexed_chroma)) )
-            tokens.append( list(np.array(tmp_tokens)) )
-            is_starting_segment.append(segment_idx == 0)
-            is_ending_segment.append(False)
-            segment_idx += 1
-        # end end_idx while
-        end_idx = main_piece_size
-        start_idx = end_idx - segment_size*main_piece.resolution
-        if start_idx > 0:
-            piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
-            names.append(piece_name)
-            chromas.append( list(np.array(indexed_chroma)) )
-            tokens.append( list(np.array(tmp_tokens)) )
-            is_starting_segment.append(segment_idx == 0)
-            is_ending_segment.append(True)
-        transposition_idx += 1
-    # end transposition range for
-    piece_idx += 1
-    if piece_idx%save_every == 0:
-        d = {
-            'names': names,
-            'chromas': chromas,
-            'tokens': tokens,
-            'start': is_starting_segment,
-            'end': is_ending_segment
-        }
-        names = []
-        chromas = []
-        tokens = []
-        is_starting_segment = []
-        is_ending_segment = []
-        df = pd.DataFrame.from_dict(d)
-        df.to_csv(f'data/test_df_{csv_file_idx}.csv', sep=',')
-        csv_file_idx += 1
+for midifile in tqdm(midifiles[piece_idx:]):
+    try:
+        main_piece = pypianoroll.read(midifolder + midifile)
+    except:
+        with open('data/problematic_pieces.txt', 'a') as f:
+            print(f'{piece_idx:05}, {midifile}', file=f)
+    else:
+        with open('data/piece_per_idx.txt', 'a') as f:
+            print(f'{piece_idx:05}, {midifile}', file=f)
+        # keep size to know when to end
+        main_piece_size = main_piece.downbeat.shape[0]
+        transposition_idx = 0
+        # roll
+        for r in tqdm(range(-6,6,1), leave=False):
+            # print(f'running for roll: {r}')
+            start_idx = 0
+            end_idx = segment_size*main_piece.resolution
+            tmp_pianoroll = np.roll(main_piece.tracks[0].pianoroll, [0,r])
+            segment_idx = 0
+            while end_idx < main_piece_size:
+                # print(f'running for start: {start_idx} and end: {end_idx}')
+                piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
+                start_idx = end_idx
+                end_idx += segment_size*main_piece.resolution
+                names.append(piece_name)
+                chromas.append( list(np.array(indexed_chroma)) )
+                tokens.append( list(np.array(tmp_tokens)) )
+                is_starting_segment.append(segment_idx == 0)
+                is_ending_segment.append(False)
+                segment_idx += 1
+            # end end_idx while
+            end_idx = main_piece_size
+            start_idx = end_idx - segment_size*main_piece.resolution
+            if start_idx > 0:
+                piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
+                names.append(piece_name)
+                chromas.append( list(np.array(indexed_chroma)) )
+                tokens.append( list(np.array(tmp_tokens)) )
+                is_starting_segment.append(segment_idx == 0)
+                is_ending_segment.append(True)
+            transposition_idx += 1
+        # end transposition range for
+        piece_idx += 1
+        if piece_idx%save_every == 0:
+            d = {
+                'names': names,
+                'chromas': chromas,
+                'tokens': tokens,
+                'start': is_starting_segment,
+                'end': is_ending_segment
+            }
+            names = []
+            chromas = []
+            tokens = []
+            is_starting_segment = []
+            is_ending_segment = []
+            df = pd.DataFrame.from_dict(d)
+            df.to_csv(f'data/test_df_{csv_file_idx}.csv', sep=',')
+            csv_file_idx += 1
 # end midifile for
 
 d = {
