@@ -8,6 +8,7 @@ from BinaryTokenizer import BinaryTokenizer
 from tqdm import tqdm
 import io
 # https://copyprogramming.com/howto/convert-bytes-into-bufferedreader-object-in-python
+import pickle
 
 from BinaryTokenizer import BinaryTokenizer
 from miditok import REMI, TokenizerConfig
@@ -43,13 +44,21 @@ TOKENIZER_PARAMS = {
 config = TokenizerConfig(**TOKENIZER_PARAMS)
 tokenizer = REMI(config)
 
+# keep tokenizer info for later
+tokenization_info = {}
+tokenization_info['pad_id'] = tokenizer._tokens_to_ids(['PAD_None'])[0]
+tokenization_info['bos_id'] = tokenizer._tokens_to_ids(['BOS_None'])[0]
+tokenization_info['eos_id'] = tokenizer._tokens_to_ids(['EOS_None'])[0]
+tokenization_info['mask_id'] = tokenizer._tokens_to_ids(['MASK_None'])[0]
+tokenization_info['max_len'] = 0
+
 binaryTokenizer = BinaryTokenizer(num_digits=12)
 
-midifolder = '../data/giantmidi/'
+midifolder = '../data/giantmidi_small/'
 midifiles = os.listdir(midifolder)
 
 save_every = 500
-csv_file_idx = 0
+file_idx = 0
 
 # size in beats
 segment_size = 64
@@ -82,7 +91,7 @@ def make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, trans
     # close the bytes handle
     b_handle.close()
     # print('midi_object: ', midi_object)
-    tmp_tokens = tokenizer.midi_to_tokens( midi_object, apply_bpe_if_possible=True)
+    tmp_tokens = tokenizer.midi_to_tokens( midi_object, apply_bpe_if_possible=False)
     return piece_name, tmp_tokens[0].ids, indexed_chroma
 
 # initialize catalogue
@@ -92,11 +101,7 @@ with open('data/piece_per_idx.txt', 'w') as f:
 with open('data/problematic_pieces.txt', 'w') as f:
     print('piece_idx, file_name', file=f)
 
-names = []
-chromas = []
-tokens = []
-is_starting_segment = []
-is_ending_segment = []
+dicts = []
 
 for midifile in tqdm(midifiles[piece_idx:]):
     try:
@@ -117,55 +122,50 @@ for midifile in tqdm(midifiles[piece_idx:]):
             end_idx = segment_size*main_piece.resolution
             tmp_pianoroll = np.roll(main_piece.tracks[0].pianoroll, [0,r])
             segment_idx = 0
+            tmp_d = {}
             while end_idx < main_piece_size:
                 # print(f'running for start: {start_idx} and end: {end_idx}')
                 piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
                 start_idx = end_idx
                 end_idx += segment_size*main_piece.resolution
-                names.append(piece_name)
-                chromas.append( list(np.array(indexed_chroma)) )
-                tokens.append( list(np.array(tmp_tokens)) )
-                is_starting_segment.append(segment_idx == 0)
-                is_ending_segment.append(False)
+                tmp_d['name'] = piece_name
+                tmp_d['chroma'] = indexed_chroma
+                tmp_d['surface'] = tmp_tokens
+                tmp_d['starts'] = segment_idx == 0
+                tmp_d['ends'] = False
+                dicts.append(tmp_d)
                 segment_idx += 1
+                if tokenization_info['max_len'] < len(tmp_tokens):
+                    tokenization_info['max_len'] = len(tmp_tokens)
             # end end_idx while
             end_idx = main_piece_size
             start_idx = end_idx - segment_size*main_piece.resolution
+            tmp_d = {}
             if start_idx > 0:
                 piece_name, tmp_tokens, indexed_chroma = make_segment(main_piece, tmp_pianoroll, start_idx, end_idx, piece_idx, transposition_idx, segment_idx)
-                names.append(piece_name)
-                chromas.append( list(np.array(indexed_chroma)) )
-                tokens.append( list(np.array(tmp_tokens)) )
-                is_starting_segment.append(segment_idx == 0)
-                is_ending_segment.append(True)
+                tmp_d['name'] = piece_name
+                tmp_d['chroma'] = indexed_chroma
+                tmp_d['surface'] = tmp_tokens
+                tmp_d['starts'] = segment_idx == 0
+                tmp_d['ends'] = True
+                dicts.append(tmp_d)
+                if tokenization_info['max_len'] < len(tmp_tokens):
+                    tokenization_info['max_len'] = len(tmp_tokens)
             transposition_idx += 1
         # end transposition range for
         piece_idx += 1
         if piece_idx%save_every == 0:
-            d = {
-                'names': names,
-                'chromas': chromas,
-                'tokens': tokens,
-                'start': is_starting_segment,
-                'end': is_ending_segment
-            }
-            names = []
-            chromas = []
-            tokens = []
-            is_starting_segment = []
-            is_ending_segment = []
-            df = pd.DataFrame.from_dict(d)
-            df.to_csv(f'data/test_df_{csv_file_idx}.csv', sep=',')
-            csv_file_idx += 1
+            with open(f'data/dicts_{file_idx}.pickle', 'wb') as handle:
+                pickle.dump(dicts, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            file_idx += 1
+            dicts = {}
 # end midifile for
 
-d = {
-    'names': names,
-    'chromas': chromas,
-    'tokens': tokens,
-    'start': is_starting_segment,
-    'end': is_ending_segment
-}
+with open(f'data/tokenization_info.pickle', 'wb') as handle:
+    pickle.dump(tokenization_info, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-df = pd.DataFrame.from_dict(d)
-df.to_csv(f'data/test_df_{csv_file_idx}.csv', sep=',')
+with open(f'data/dicts_{file_idx}.pickle', 'wb') as handle:
+    pickle.dump(dicts, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# with open('filename.pickle', 'rb') as handle:
+#     b = pickle.load(handle)
