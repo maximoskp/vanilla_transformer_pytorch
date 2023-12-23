@@ -54,7 +54,7 @@ tokenization_info['max_len'] = 0
 
 binaryTokenizer = BinaryTokenizer(num_digits=12)
 
-midifolder = '../data/giantmidi_small/'
+midifolder = '../data/giantmidi/'
 midifiles = os.listdir(midifolder)
 
 save_every = 500
@@ -158,7 +158,7 @@ for midifile in tqdm(midifiles[piece_idx:]):
             with open(f'data/dicts_{file_idx}.pickle', 'wb') as handle:
                 pickle.dump(dicts, handle, protocol=pickle.HIGHEST_PROTOCOL)
             file_idx += 1
-            dicts = {}
+            dicts = []
 # end midifile for
 
 with open(f'data/tokenization_info.pickle', 'wb') as handle:
